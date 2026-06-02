@@ -31,3 +31,12 @@ grep -E '^task=12|^start_utc=|^prompt=|^seed=|^cfg_text_scale=|^mode=|^===== num
 python - <<PY
 # image statistics for steps outputs
 PY
+
+# Finalize task12 report after manual run outputs were available
+rg "^=====|^output=|^model_load_seconds=|^inference_seconds=|^total_seconds=|^gpu_memory_after_load=|^gpu_memory_after_inference=|^status=|^wall_seconds=|^outputs:|steps_" repro_records/task12_20260601_211039/logs/ablation_timesteps.log
+ls -lah repro_records/task12_20260601_211039/outputs repro_records/task12_20260601_211039/logs
+sed -n '1,260p' repro_records/task12_20260601_211039/09_ablation_timesteps.md
+# Codex also inspected the three PNG outputs visually:
+# repro_records/task12_20260601_211039/outputs/steps_10.png
+# repro_records/task12_20260601_211039/outputs/steps_30.png
+# repro_records/task12_20260601_211039/outputs/steps_50.png

@@ -1,0 +1,21 @@
+task=13
+record_dir=repro_records/task13_20260602_172339
+summary_output=repro_records/task13_20260602_172339/summary_for_ppt.md
+source_records:
+- repro_records/20260531T080101Z/00_env_check.md
+- repro_records/20260531_210418/01_repo_and_weights_check.md
+- repro_records/20260601_141533/02_ui_launch.md
+- repro_records/task03_20260601_145116/summary_app_py.md
+- repro_records/task04_20260601_152117/summary_inferencer_py.md
+- repro_records/task05_20260601_152705/minimal_cli.md
+- repro_records/task06_20260601_154840/03_task_t2i.md
+- repro_records/task07_20260601_083153/04_task_understanding.md
+- repro_records/task08_20260601_085406/05_task_editing.md
+- repro_records/task09/06_ablation_thinking.md
+- repro_records/task10_20260601_102643/07_ablation_cfg_text_scale.md
+- repro_records/task11_20260601_204507/08_ablation_cfg_img_scale.md
+- repro_records/task12_20260601_211039/09_ablation_timesteps.md
+notes:
+- Task13 did not run model inference or any GPU workload.
+- Task13 summarized existing reports, logs, and task12 generated images.
+- New-Item -LiteralPath failed in PowerShell; New-Item -Path succeeded.

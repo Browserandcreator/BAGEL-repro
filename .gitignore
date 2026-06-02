@@ -9,3 +9,5 @@ tests
 .DS_Store
 gradio.sh
 data_example
+# Local large files / model weights
+models/

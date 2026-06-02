@@ -1,0 +1,88 @@
+
+===== test 1: 2026-06-01 22:28:42 =====
+http_code=200 connect=0.000110s tls=0.635347s total=0.961692s exit=0
+
+===== test 2: 2026-06-01 22:28:53 =====
+http_code=200 connect=0.000107s tls=0.624802s total=0.780733s exit=0
+
+===== test 3: 2026-06-01 22:29:04 =====
+http_code=200 connect=0.000115s tls=0.954025s total=1.186078s exit=0
+
+===== test 4: 2026-06-01 22:29:15 =====
+http_code=200 connect=0.000122s tls=0.723673s total=0.909466s exit=0
+
+===== test 5: 2026-06-01 22:29:26 =====
+http_code=200 connect=0.000109s tls=0.712785s total=0.911148s exit=0
+
+===== test 6: 2026-06-01 22:29:37 =====
+http_code=200 connect=0.000115s tls=1.071491s total=1.270770s exit=0
+
+===== test 7: 2026-06-01 22:29:49 =====
+http_code=200 connect=0.000108s tls=0.651528s total=0.900806s exit=0
+
+===== test 8: 2026-06-01 22:29:59 =====
+http_code=200 connect=0.000106s tls=0.808139s total=1.040152s exit=0
+
+===== test 9: 2026-06-01 22:30:11 =====
+http_code=200 connect=0.000118s tls=1.640484s total=2.007830s exit=0
+
+===== test 10: 2026-06-01 22:30:23 =====
+http_code=200 connect=0.000108s tls=0.625672s total=0.860311s exit=0
+
+===== test 11: 2026-06-01 22:30:33 =====
+http_code=200 connect=0.000118s tls=0.749970s total=0.948255s exit=0
+
+===== test 12: 2026-06-01 22:30:44 =====
+http_code=200 connect=0.000103s tls=0.909074s total=1.152815s exit=0
+
+===== test 13: 2026-06-01 22:30:56 =====
+http_code=200 connect=0.000114s tls=0.632034s total=0.792776s exit=0
+
+===== test 14: 2026-06-01 22:31:06 =====
+http_code=200 connect=0.000100s tls=0.609285s total=0.847324s exit=0
+
+===== test 15: 2026-06-01 22:31:17 =====
+http_code=200 connect=0.000104s tls=1.101233s total=1.648340s exit=0
+
+===== test 16: 2026-06-01 22:31:29 =====
+http_code=200 connect=0.000119s tls=0.604597s total=0.844330s exit=0
+
+===== test 17: 2026-06-01 22:31:40 =====
+http_code=200 connect=0.000112s tls=0.830607s total=1.099527s exit=0
+
+===== test 18: 2026-06-01 22:31:51 =====
+http_code=200 connect=0.000113s tls=0.861648s total=1.286905s exit=0
+
+===== test 19: 2026-06-01 22:32:02 =====
+curl: (35) error:0A000126:SSL routines::unexpected eof while reading
+http_code=000 connect=0.000116s tls=0.000000s total=0.629950s exit=35
+CURL_FAILED exit=35
+
+===== test 20: 2026-06-01 22:32:13 =====
+http_code=200 connect=0.000100s tls=0.660620s total=0.903066s exit=0
+
+===== test 21: 2026-06-01 22:32:24 =====
+http_code=200 connect=0.000114s tls=0.662490s total=0.921691s exit=0
+
+===== test 22: 2026-06-01 22:32:35 =====
+http_code=200 connect=0.000115s tls=0.615914s total=0.769500s exit=0
+
+===== test 23: 2026-06-01 22:32:45 =====
+http_code=200 connect=0.000114s tls=0.610914s total=0.838064s exit=0
+
+===== test 24: 2026-06-01 22:32:56 =====
+http_code=200 connect=0.000113s tls=0.626379s total=0.870949s exit=0
+
+===== test 25: 2026-06-01 22:33:07 =====
+http_code=200 connect=0.000101s tls=0.669805s total=0.838107s exit=0
+
+===== test 26: 2026-06-01 22:33:18 =====
+http_code=200 connect=0.000125s tls=0.667967s total=0.824892s exit=0
+
+===== test 27: 2026-06-01 22:33:29 =====
+http_code=200 connect=0.000114s tls=0.634363s total=0.792959s exit=0
+
+===== test 28: 2026-06-01 22:33:40 =====
+curl: (35) error:0A000126:SSL routines::unexpected eof while reading
+http_code=000 connect=0.000112s tls=0.000000s total=0.577374s exit=35
+CURL_FAILED exit=35

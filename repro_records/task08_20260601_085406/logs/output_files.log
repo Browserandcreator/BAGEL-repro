@@ -1,0 +1,8 @@
+repro_records/task08_20260601_085406/commands.sh
+repro_records/task08_20260601_085406/logs/edit_baseline.log
+repro_records/task08_20260601_085406/logs/gpu_before.log
+repro_records/task08_20260601_085406/logs/image_candidates.log
+repro_records/task08_20260601_085406/logs/input_image_file.log
+repro_records/task08_20260601_085406/logs/output_files.log
+repro_records/task08_20260601_085406/logs/plan_read.log
+repro_records/task08_20260601_085406/outputs/edit_baseline.png

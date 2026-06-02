@@ -1,0 +1,6 @@
+# conda environments:
+#
+base                     /root/miniconda3
+bagel                 *  /root/miniconda3/envs/bagel
+fdloss                   /root/miniconda3/envs/fdloss
+

@@ -1,0 +1,958 @@
+===== AGENTS.md =====
+# BAGEL Reproduction Instructions
+
+This repository is being used for a BAGEL UMM reproduction and engineering analysis project.
+
+## Role
+
+Act as a careful experiment assistant.
+
+Your job is to help monitor processes, record logs, run one task at a time, diagnose simple bugs, and produce clean records that can later be used in a presentation.
+
+## Hard Rules
+
+- Do not run all tasks at once.
+- Complete only one requested task at a time.
+- After finishing one task, summarize the result and stop for confirmation.
+- Do not modify core model logic unless explicitly approved.
+- Only apply low-risk fixes for path, import, logging, environment, or CLI usability issues.
+- Every command must be recorded.
+- Every error must be analyzed before fixing.
+- Every code change must be explained.
+- Every output file path must be recorded.
+- Record GPU memory usage and runtime whenever possible.
+- Save all records under repro_records/.
+- Do not delete user files, checkpoints, logs, or generated outputs unless explicitly instructed.
+
+## Record Directory
+
+每个任务单独创建一个运行目录，目录名必须同时包含任务序号和时间戳。
+
+统一格式：
+
+    repro_records/taskXX_YYYYMMDD_HHMMSS/
+
+其中：
+
+- `taskXX` 表示任务序号，使用两位数字，例如 `task00`、`task01`、`task02`
+- `YYYYMMDD_HHMMSS` 表示任务开始执行时的时间戳
+- 每个任务的日志、总结、输出文件都保存在该任务对应目录下
+
+示例：
+
+    repro_records/task00_20260531_153000/
+    repro_records/task01_20260531_160000/
+    repro_records/task02_20260531_163000/
+
+例如任务 0 的输出应保存为：
+
+    repro_records/task00_20260531_153000/00_env_check.md
+    repro_records/task00_20260531_153000/logs/env_check.log
+
+任务 1 的输出应保存为：
+
+    repro_records/task01_20260531_160000/01_repo_and_weights_check.md
+    repro_records/task01_20260531_160000/logs/weights_check.log
+
+## Per-Task Report Format
+
+For each task, write a Markdown report using this structure:
+
+    # Task Name
+
+    ## Goal
+
+    ## Commands
+
+    ## Key Output
+
+    ## Error / Warning
+
+    ## Fix Attempt
+
+    ## Result
+
+    ## Notes for PPT
+
+## Task Execution Rule
+
+When the user asks you to run a numbered task, run only that task.
+
+The full task plan is stored in:
+
+    docs/codex_bagel_repro_plan.md
+
+Before running any task, read that file first.
+
+After finishing the requested task, report:
+
+1. What was run.
+2. Whether it succeeded.
+3. Important logs.
+4. Output files.
+5. Bugs encountered.
+6. Fixes applied, if any.
+7. Whether the next task is safe to run.
+
+Then stop and wait for confirmation.
+
+## Code Modification Policy
+
+Allowed without extra approval:
+
+- Add logging.
+- Add CLI wrappers.
+- Fix missing paths.
+- Fix import errors.
+- Fix obvious environment compatibility issues.
+- Add output saving.
+- Add runtime and GPU memory reporting.
+
+Not allowed without explicit approval:
+
+- Change BAGEL model architecture.
+- Change core forward logic.
+- Change tokenizer behavior.
+- Change VAE or ViT logic.
+- Change checkpoint loading semantics.
+- Delete or overwrite checkpoints.
+- Run training or large-scale evaluation.
+- Launch all ablations automatically.
+
+## Current Project Goal
+
+The user wants to reproduce and analyze BAGEL for a UMM interview or assessment.
+
+The goal is not only to run the Gradio demo, but also to understand and document:
+
+- Repository structure.
+- Model loading flow.
+- Inference data flow.
+- Text-to-image path.
+- Image editing path.
+- Image understanding path.
+- The role of app.py.
+- The role of inferencer.py.
+- The role of thinking mode.
+- The role of CFG text scale.
+- The role of CFG image scale.
+- The role of num_timesteps.
+- Engineering issues and fixes.
+
+## Preferred Output Style
+
+Be concise but complete.
+
+Do not over-claim results.
+
+Clearly separate:
+
+- What was actually run.
+- What was only inspected from code.
+- What failed.
+- What was fixed.
+- What remains unverified.
+
+
+## Language Policy
+
+- 所有面向用户的说明、任务执行过程描述、阶段总结、Markdown 报告、bug 分析、实验观察、PPT 可用总结都必须使用中文。
+- 命令、文件路径、函数名、类名、包名、参数名、环境变量、终端原始报错可以保留英文原文。
+- 不要把英文命令、Python traceback、CUDA 报错、pip/conda 输出强行翻译。
+- 如果报告中引用原始日志，应先保留原文，再用中文解释其含义。
+- 每个任务完成后的总结必须使用中文。
+- 如果需要向用户提问，也必须使用中文。
+- `summary_for_ppt.md` 必须使用中文，并且适合直接转成中文 PPT bullet points。
+- `bugfix_log.md` 必须使用中文说明问题原因、定位过程和修复方法。
+- `commands.sh` 中的命令保持原样，不需要翻译。
+- `logs/` 目录中的原始日志保持原样，不需要翻译。
+
+## 中文报告格式要求
+
+每个任务报告建议使用以下中文结构：
+
+    # 任务名称
+
+    ## 目标
+
+    ## 执行命令
+
+    ## 关键输出
+
+    ## 报错 / 警告
+
+    ## 修复尝试
+
+    ## 结果
+
+    ## 可用于 PPT 的记录
+
+
+===== docs/codex_bagel_repro_plan.md =====
+# Codex BAGEL Reproduction Plan
+
+This file stores the detailed task plan for BAGEL reproduction.
+
+Codex should read this file together with AGENTS.md before running any task.
+
+## General Rule
+
+Run only one task at a time.
+
+After finishing one task, summarize the result and stop for confirmation.
+
+Do not automatically continue to the next task.
+
+## Task 0: Environment Check
+
+Goal: Check Python, CUDA, PyTorch, flash-attn, GPU, disk, and repository status.
+
+Commands:
+
+    pwd
+    git rev-parse HEAD
+    git status --short
+    python -V
+    which python
+    pip list | grep -E "torch|flash|accelerate|transformers|gradio|bitsandbytes|safetensors|huggingface"
+    nvidia-smi
+    df -h
+    du -sh .
+
+If conda is available:
+
+    conda env list
+    conda list | grep -E "torch|flash|accelerate|transformers|gradio|bitsandbytes|safetensors"
+
+Write outputs to:
+
+    repro_records/<timestamp>/00_env_check.md
+    repro_records/<timestamp>/logs/env_check.log
+
+Stop after Task 0.
+
+## Task 1: Repository and Weight Check
+
+Goal: Check repository structure and whether model weights are complete.
+
+Commands:
+
+    ls -lah
+    find . -maxdepth 2 -type f | sort | head -200
+    ls -lah models || true
+    ls -lah models/BAGEL-7B-MoT || true
+    find models/BAGEL-7B-MoT -maxdepth 2 -type f | sort | head -200 || true
+    du -sh models/BAGEL-7B-MoT || true
+
+Important files:
+
+    models/BAGEL-7B-MoT/llm_config.json
+    models/BAGEL-7B-MoT/vit_config.json
+    models/BAGEL-7B-MoT/ae.safetensors
+    models/BAGEL-7B-MoT/ema.safetensors
+
+Write outputs to:
+
+    repro_records/<timestamp>/01_repo_and_weights_check.md
+    repro_records/<timestamp>/logs/weights_check.log
+
+Stop after Task 1.
+
+## Task 2: Launch Official UI
+
+Goal: Verify whether official Gradio UI can start.
+
+Try low-memory mode first:
+
+    python app.py --mode 2 --server_name 0.0.0.0 --server_port 7860 --zh
+
+If mode 2 fails, try:
+
+    python app.py --mode 3 --server_name 0.0.0.0 --server_port 7860 --zh
+
+If GPU memory is enough, try:
+
+    python app.py --mode 1 --server_name 0.0.0.0 --server_port 7860 --zh
+
+Record:
+
+- Whether launch succeeded.
+- Which mode was used.
+- Loading time.
+- GPU memory usage.
+- Access URL.
+- Warnings.
+- Errors.
+
+Write outputs to:
+
+    repro_records/<timestamp>/02_ui_launch.md
+    repro_records/<timestamp>/logs/ui_launch.log
+
+Stop after Task 2.
+
+## Task 3: Analyze app.py
+
+Goal: Read app.py and summarize the official UI inference entry points.
+
+Focus on:
+
+- Model initialization.
+- Tokenizer loading.
+- VAE transform.
+- ViT transform.
+- InterleaveInferencer initialization.
+- text_to_image().
+- image_understanding().
+- edit_image().
+- Parameters such as cfg_text_scale, cfg_img_scale, num_timesteps, and think.
+
+Write output to:
+
+    repro_records/<timestamp>/summary_app_py.md
+
+Stop after Task 3.
+
+## Task 4: Analyze inferencer.py
+
+Goal: Understand BAGEL interleaved inference data flow.
+
+Focus on:
+
+- init_gen_context().
+- update_context_text().
+- update_context_image().
+- gen_text().
+- gen_image().
+- interleave_inference().
+- Difference between understanding_output=True and False.
+- Thinking mode.
+
+Write output to:
+
+    repro_records/<timestamp>/summary_inferencer_py.md
+
+Stop after Task 4.
+
+## Task 5: Create Minimal CLI Script
+
+Goal: Create a minimal command-line script that bypasses Gradio and directly calls the BAGEL inference pipeline.
+
+Target file:
+
+    scripts/run_bagel_minimal.py
+
+The script should support:
+
+- text-to-image
+- image understanding
+- image editing
+
+Required arguments:
+
+    --model_path
+    --mode
+    --task
+    --image
+    --prompt
+    --output
+    --seed
+    --think
+    --num_timesteps
+    --cfg_text_scale
+    --cfg_img_scale
+    --cfg_interval
+    --timestep_shift
+
+Principles:
+
+- Reuse app.py model loading logic as much as possible.
+- Do not modify core model code.
+- Save all outputs to the specified path.
+- Print task, prompt, input image path, output path, mode, seed, runtime, and GPU memory.
+
+Run only one smoke test after creating the script.
+
+Write outputs to:
+
+    repro_records/<timestamp>/minimal_cli.md
+    repro_records/<timestamp>/logs/minimal_cli.log
+
+Stop after Task 5.
+
+## Task 6: Text-to-Image Baseline
+
+Goal: Run one fixed text-to-image baseline.
+
+Parameters:
+
+    prompt = a small robot sitting at a wooden desk, reading a book under warm light, highly detailed
+    seed = 42
+    num_timesteps = 30
+    cfg_text_scale = 4.0
+    mode = 2
+
+Output:
+
+    repro_records/<timestamp>/outputs/t2i_baseline.png
+
+Write outputs to:
+
+    repro_records/<timestamp>/03_task_t2i.md
+    repro_records/<timestamp>/logs/t2i_baseline.log
+
+Stop after Task 6.
+
+## Task 7: Image Understanding Baseline
+
+Goal: Run one image understanding task.
+
+Use an existing example image if available. Otherwise ask the user to provide an image.
+
+Command format:
+
+    python scripts/run_bagel_minimal.py --task understand --image <input_image> --prompt "Describe this image in detail." --output repro_records/<timestamp>/outputs/understanding_baseline.txt --mode 2
+
+Write outputs to:
+
+    repro_records/<timestamp>/04_task_understanding.md
+    repro_records/<timestamp>/logs/understanding_baseline.log
+
+Stop after Task 7.
+
+## Task 8: Image Editing Baseline
+
+Goal: Run one image editing task.
+
+Use an existing example image if available. Otherwise ask the user to provide an image.
+
+Command format:
+
+    python scripts/run_bagel_minimal.py --task edit --image <input_image> --prompt "change the background into a subway station while keeping the main subject unchanged" --output repro_records/<timestamp>/outputs/edit_baseline.png --mode 2 --num_timesteps 30 --cfg_text_scale 4.0 --cfg_img_scale 2.0 --seed 42
+
+Write outputs to:
+
+    repro_records/<timestamp>/05_task_editing.md
+    repro_records/<timestamp>/logs/edit_baseline.log
+
+Stop after Task 8.
+
+## Task 9: Thinking Ablation
+
+Goal: Compare think=False and think=True.
+
+Fixed parameters:
+
+    prompt = a robot chef cooking noodles in a futuristic kitchen, with a cat watching nearby
+    seed = 42
+    num_timesteps = 30
+    cfg_text_scale = 4.0
+    mode = 2
+
+Outputs:
+
+    repro_records/<timestamp>/outputs/think_false.png
+    repro_records/<timestamp>/outputs/think_true.png
+    repro_records/<timestamp>/outputs/think_true_text.txt
+
+Write outputs to:
+
+    repro_records/<timestamp>/06_ablation_thinking.md
+    repro_records/<timestamp>/logs/ablation_thinking.log
+
+Stop after Task 9.
+
+## Task 10: CFG Text Scale Ablation
+
+Goal: Observe the effect of cfg_text_scale.
+
+Fixed parameters:
+
+    prompt = a blue glass castle floating above the ocean at sunset
+    seed = 42
+    num_timesteps = 30
+    mode = 2
+    think = false
+
+Run:
+
+    cfg_text_scale = 1.0
+    cfg_text_scale = 4.0
+    cfg_text_scale = 8.0
+
+Outputs:
+
+    repro_records/<timestamp>/outputs/cfg_text_1.png
+    repro_records/<timestamp>/outputs/cfg_text_4.png
+    repro_records/<timestamp>/outputs/cfg_text_8.png
+
+Write outputs to:
+
+    repro_records/<timestamp>/07_ablation_cfg_text_scale.md
+    repro_records/<timestamp>/logs/ablation_cfg_text.log
+
+Stop after Task 10.
+
+## Task 11: CFG Image Scale Ablation
+
+Goal: Observe the effect of cfg_img_scale in image editing.
+
+Fixed parameters:
+
+    image = same input image
+    prompt = change the background into a snowy mountain while keeping the main subject unchanged
+    seed = 42
+    num_timesteps = 30
+    cfg_text_scale = 4.0
+    mode = 2
+
+Run:
+
+    cfg_img_scale = 1.0
+    cfg_img_scale = 2.0
+    cfg_img_scale = 4.0
+
+Outputs:
+
+    repro_records/<timestamp>/outputs/cfg_img_1.png
+    repro_records/<timestamp>/outputs/cfg_img_2.png
+    repro_records/<timestamp>/outputs/cfg_img_4.png
+
+Write outputs to:
+
+    repro_records/<timestamp>/08_ablation_cfg_img_scale.md
+    repro_records/<timestamp>/logs/ablation_cfg_img.log
+
+Stop after Task 11.
+
+## Task 12: num_timesteps Ablation
+
+Goal: Observe the speed-quality trade-off of num_timesteps.
+
+Fixed parameters:
+
+    prompt = a detailed cyberpunk street at night with neon lights and rain
+    seed = 42
+    cfg_text_scale = 4.0
+    mode = 2
+    think = false
+
+Run:
+
+    num_timesteps = 10
+    num_timesteps = 30
+    num_timesteps = 50
+
+Outputs:
+
+    repro_records/<timestamp>/outputs/steps_10.png
+    repro_records/<timestamp>/outputs/steps_30.png
+    repro_records/<timestamp>/outputs/steps_50.png
+
+Write outputs to:
+
+    repro_records/<timestamp>/09_ablation_timesteps.md
+    repro_records/<timestamp>/logs/ablation_timesteps.log
+
+Stop after Task 12.
+
+## Task 13: PPT Summary
+
+Goal: Summarize all completed tasks into a PPT-ready engineering reproduction summary.
+
+Write output to:
+
+    repro_records/<timestamp>/summary_for_ppt.md
+
+The summary should include:
+
+- What was run.
+- Environment.
+- Repository structure.
+- Model loading flow.
+- Inference data flow.
+- Tested tasks.
+- Ablation results.
+- Bugs and fixes.
+- Engineering insights.
+- Limitations.
+- What to improve next.
+
+Clearly distinguish:
+
+- Actually executed.
+- Only inspected from code.
+- Failed.
+- Fixed.
+- Unverified.
+
+Stop after Task 13.
+
+===== wc -l inferencer.py =====
+313 inferencer.py
+
+===== inferencer.py key lines =====
+15:VLM_THINK_SYSTEM_PROMPT = '''You should first think about the reasoning process in the mind and then provide the user with the answer. 
+16:The reasoning process is enclosed within <think> </think> tags, i.e. <think> reasoning process here </think> answer here'''
+18:GEN_THINK_SYSTEM_PROMPT = '''You should first think about the planning process in the mind and then generate the image. 
+19:The planning process is enclosed within <think> </think> tags, i.e. <think> planning process here </think> image here'''
+22:class InterleaveInferencer:
+31:    def init_gen_context(self): 
+40:    def update_context_text(self, text, gen_context):
+62:    def update_context_image(self, image, gen_context, vae=True, vit=True):
+99:    def gen_image(
+188:    def gen_text(self, gen_context, max_length: int = 500, do_sample: bool = True, temperature: float = 1.0):
+208:    def interleave_inference(
+211:        think=False,
+212:        understanding_output=False,
+214:        max_think_token_n=1000,
+234:            if think:
+235:                if understanding_output:
+250:                    gen_context = self.update_context_image(input_term, gen_context, vae=not understanding_output)
+258:            if understanding_output:
+259:                gen_text = self.gen_text(gen_context, do_sample=do_sample, temperature=text_temperature, max_length=max_think_token_n)
+263:                if think:
+264:                    gen_text = self.gen_text(gen_context, do_sample=do_sample, temperature=text_temperature, max_length=max_think_token_n)
+
+===== inferencer.py 1-260 =====
+# Copyright 2025 Bytedance Ltd. and/or its affiliates.
+# SPDX-License-Identifier: Apache-2.0
+
+from copy import deepcopy
+from typing import List, Dict, Optional, Union, Any
+
+from PIL import Image
+import torch
+
+from data.data_utils import pil_img2rgb
+from modeling.bagel.qwen2_navit import NaiveCache
+
+
+
+VLM_THINK_SYSTEM_PROMPT = '''You should first think about the reasoning process in the mind and then provide the user with the answer. 
+The reasoning process is enclosed within <think> </think> tags, i.e. <think> reasoning process here </think> answer here'''
+
+GEN_THINK_SYSTEM_PROMPT = '''You should first think about the planning process in the mind and then generate the image. 
+The planning process is enclosed within <think> </think> tags, i.e. <think> planning process here </think> image here'''
+
+
+class InterleaveInferencer:
+    def __init__(self, model, vae_model, tokenizer, vae_transform, vit_transform, new_token_ids):
+        self.model = model
+        self.vae_model = vae_model
+        self.tokenizer = tokenizer
+        self.vae_transform = vae_transform
+        self.vit_transform = vit_transform
+        self.new_token_ids = new_token_ids
+        
+    def init_gen_context(self): 
+        gen_context = {
+            'kv_lens': [0],
+            'ropes': [0],
+            'past_key_values': NaiveCache(self.model.config.llm_config.num_hidden_layers),
+        }
+        return gen_context
+
+    @torch.no_grad()
+    def update_context_text(self, text, gen_context):
+        # used for interleave data, currently only support 1 data inference, 
+
+        past_key_values = gen_context['past_key_values']
+        kv_lens = gen_context['kv_lens']
+        ropes = gen_context['ropes']
+        generation_input, kv_lens, ropes = self.model.prepare_prompts(
+            curr_kvlens=kv_lens,
+            curr_rope=ropes, 
+            prompts=[text],
+            tokenizer=self.tokenizer, 
+            new_token_ids=self.new_token_ids,
+        )
+
+        past_key_values = self.model.forward_cache_update_text(past_key_values, **generation_input)        
+        gen_context['kv_lens'] = kv_lens
+        gen_context['ropes'] = ropes
+        gen_context['past_key_values'] = past_key_values
+        
+        return gen_context
+
+    @torch.no_grad()
+    def update_context_image(self, image, gen_context, vae=True, vit=True):
+        # used for interleave data, currently only support 1 data inference, 
+
+        assert vae or vit
+        past_key_values = gen_context['past_key_values']
+        kv_lens = gen_context['kv_lens']
+        ropes =  gen_context['ropes']
+
+        if vae:
+            ## update vae
+            generation_input, kv_lens, ropes = self.model.prepare_vae_images(
+                curr_kvlens=kv_lens,
+                curr_rope=ropes, 
+                images=[image],
+                transforms=self.vae_transform, 
+                new_token_ids=self.new_token_ids,
+            )
+            past_key_values = self.model.forward_cache_update_vae(self.vae_model, past_key_values, **generation_input)
+        
+        if vit:
+            ## update vit
+            generation_input, kv_lens, ropes = self.model.prepare_vit_images(
+                curr_kvlens=kv_lens,
+                curr_rope=ropes, 
+                images=[image],
+                transforms=self.vit_transform, 
+                new_token_ids=self.new_token_ids,
+            )
+            past_key_values = self.model.forward_cache_update_vit(past_key_values, **generation_input)
+
+        gen_context['kv_lens'] = kv_lens
+        gen_context['ropes'] = ropes
+        gen_context['past_key_values'] = past_key_values
+        
+        return gen_context
+
+    @torch.no_grad()
+    def gen_image(
+        self, 
+        image_shape, 
+        gen_context, 
+        cfg_text_scale=4.0,
+        cfg_img_scale=1.5,
+
+        cfg_text_precontext=None, 
+        cfg_img_precontext=None, 
+        cfg_interval=(0.4, 1.0),
+        cfg_renorm_min=0.0,
+        cfg_renorm_type="global",
+        
+        num_timesteps=50, 
+        timestep_shift=3.0,
+        enable_taylorseer=False,
+    ):
+        # print(cfg_renorm_type)
+        past_key_values = gen_context['past_key_values']
+        kv_lens = gen_context['kv_lens']
+        ropes = gen_context['ropes']
+        generation_input = self.model.prepare_vae_latent(
+            curr_kvlens=kv_lens,
+            curr_rope=ropes, 
+            image_sizes=[image_shape], 
+            new_token_ids=self.new_token_ids,
+        ) 
+        
+        # text cfg
+        cfg_text_past_key_values = cfg_text_precontext['past_key_values']
+        kv_lens_cfg = cfg_text_precontext['kv_lens']
+        ropes_cfg = cfg_text_precontext['ropes']
+        generation_input_cfg_text = self.model.prepare_vae_latent_cfg(
+            curr_kvlens=kv_lens_cfg,
+            curr_rope=ropes_cfg, 
+            image_sizes=[image_shape], 
+        )
+
+        # img cfg
+        cfg_img_past_key_values = cfg_img_precontext['past_key_values']
+        kv_lens_cfg = cfg_img_precontext['kv_lens']
+        ropes_cfg = cfg_img_precontext['ropes']
+        generation_input_cfg_img = self.model.prepare_vae_latent_cfg(
+            curr_kvlens=kv_lens_cfg,
+            curr_rope=ropes_cfg, 
+            image_sizes=[image_shape], 
+        )
+
+        unpacked_latent = self.model.generate_image(
+            past_key_values=past_key_values,
+            cfg_text_past_key_values=cfg_text_past_key_values,
+            cfg_img_past_key_values=cfg_img_past_key_values,
+            num_timesteps=num_timesteps,
+            cfg_text_scale=cfg_text_scale,
+            cfg_img_scale=cfg_img_scale,
+            cfg_interval=cfg_interval,
+            cfg_renorm_min=cfg_renorm_min,
+            cfg_renorm_type=cfg_renorm_type,
+            timestep_shift=timestep_shift,
+            **generation_input,
+            cfg_text_packed_position_ids=generation_input_cfg_text['cfg_packed_position_ids'],
+            cfg_text_packed_query_indexes=generation_input_cfg_text['cfg_packed_query_indexes'],
+            cfg_text_key_values_lens=generation_input_cfg_text['cfg_key_values_lens'],
+            cfg_text_packed_key_value_indexes=generation_input_cfg_text['cfg_packed_key_value_indexes'],
+            cfg_img_packed_position_ids=generation_input_cfg_img['cfg_packed_position_ids'],
+            cfg_img_packed_query_indexes=generation_input_cfg_img['cfg_packed_query_indexes'],
+            cfg_img_key_values_lens=generation_input_cfg_img['cfg_key_values_lens'],
+            cfg_img_packed_key_value_indexes=generation_input_cfg_img['cfg_packed_key_value_indexes'],
+            enable_taylorseer=enable_taylorseer,
+        )
+
+        image = self.decode_image(unpacked_latent[0], image_shape)
+        return image
+
+        
+    def decode_image(self, latent, image_shape):
+        H, W = image_shape
+        h, w = H // self.model.latent_downsample, W // self.model.latent_downsample
+
+        latent = latent.reshape(1, h, w, self.model.latent_patch_size, self.model.latent_patch_size, self.model.latent_channel)
+        latent = torch.einsum("nhwpqc->nchpwq", latent)
+        latent = latent.reshape(1, self.model.latent_channel, h * self.model.latent_patch_size, w * self.model.latent_patch_size)
+        image = self.vae_model.decode(latent)
+        image = (image * 0.5 + 0.5).clamp(0, 1)[0].permute(1, 2, 0) * 255
+        image = Image.fromarray((image).to(torch.uint8).cpu().numpy())
+
+        return image
+
+    @torch.no_grad()
+    def gen_text(self, gen_context, max_length: int = 500, do_sample: bool = True, temperature: float = 1.0):
+        gen_context = deepcopy(gen_context)
+        past_key_values = gen_context['past_key_values']
+        kv_lens = gen_context['kv_lens']
+        ropes = gen_context['ropes']
+
+        generation_input = self.model.prepare_start_tokens(kv_lens, ropes, self.new_token_ids)
+        unpacked_latent = self.model.generate_text(
+            past_key_values=past_key_values,
+            max_length=max_length,
+            do_sample=do_sample,
+            temperature=temperature,
+            end_token_id=self.new_token_ids['eos_token_id'],
+            **generation_input,
+        )
+        output = self.tokenizer.decode(unpacked_latent[:,0])
+        output = output.split('<|im_end|>')[0].split('<|im_start|>')[1]
+        return output
+        
+    @torch.no_grad()
+    def interleave_inference(
+        self,
+        input_lists: List[Union[str, Image.Image]],
+        think=False,
+        understanding_output=False,
+
+        max_think_token_n=1000,
+        do_sample=False,
+        text_temperature=0.3,
+        cfg_text_scale=3.0,
+        cfg_img_scale=1.5,
+        cfg_interval=[0.4, 1.0],
+        timestep_shift=3.0,
+        num_timesteps=50,
+        cfg_renorm_min=0.0,
+        cfg_renorm_type="global",
+        image_shapes=(1024, 1024),
+        enable_taylorseer=False,
+    ) -> List[Union[str, Image.Image]]:
+
+        output_list = []
+        gen_context = self.init_gen_context()
+        cfg_text_context = deepcopy(gen_context)
+        cfg_img_context = deepcopy(gen_context)
+
+        with torch.autocast(device_type="cuda", enabled=True, dtype=torch.bfloat16):
+            if think:
+                if understanding_output:
+                    system_prompt = VLM_THINK_SYSTEM_PROMPT 
+                else:
+                    system_prompt = GEN_THINK_SYSTEM_PROMPT
+                gen_context = self.update_context_text(system_prompt, gen_context)
+                cfg_img_context = self.update_context_text(system_prompt, cfg_img_context)
+
+            for input_term in input_lists:
+                if isinstance(input_term, str):
+                    cfg_text_context = deepcopy(gen_context)
+                    gen_context = self.update_context_text(input_term, gen_context)
+                    cfg_img_context = self.update_context_text(input_term, cfg_img_context)
+
+                elif isinstance(input_term, Image.Image):
+                    input_term = self.vae_transform.resize_transform(pil_img2rgb(input_term))
+                    gen_context = self.update_context_image(input_term, gen_context, vae=not understanding_output)
+
+                    image_shapes = input_term.size[::-1]
+                    cfg_text_context = deepcopy(gen_context)
+
+                else:
+                    raise ValueError(f"Unsupported input type: {type(input_term)}")
+
+            if understanding_output:
+                gen_text = self.gen_text(gen_context, do_sample=do_sample, temperature=text_temperature, max_length=max_think_token_n)
+                output_list.append(gen_text)
+
+===== inferencer.py 261-560 =====
+
+            else:
+                if think:
+                    gen_text = self.gen_text(gen_context, do_sample=do_sample, temperature=text_temperature, max_length=max_think_token_n)
+                    gen_context = self.update_context_text(gen_text, gen_context)
+                    output_list.append(gen_text)
+
+                img = self.gen_image(
+                    image_shapes, 
+                    gen_context, 
+                    cfg_text_precontext=cfg_text_context, 
+                    cfg_img_precontext=cfg_img_context,
+
+                    cfg_text_scale=cfg_text_scale, 
+                    cfg_img_scale=cfg_img_scale, 
+                    cfg_interval=cfg_interval, 
+                    timestep_shift=timestep_shift, 
+                    num_timesteps=num_timesteps,
+                    cfg_renorm_min=cfg_renorm_min,
+                    cfg_renorm_type=cfg_renorm_type,
+                    enable_taylorseer=enable_taylorseer,
+                )
+
+                output_list.append(img)
+
+        return output_list
+    
+    def __call__(
+        self, 
+        image: Optional[Image.Image] = None, 
+        text: Optional[str] = None, 
+        **kargs
+    ) -> Dict[str, Any]:
+        output_dict = {'image': None, 'text': None}
+
+        if image is None and text is None:
+            print('Please provide at least one input: either an image or text.')
+            return output_dict
+
+        input_list = []
+        if image is not None:
+            input_list.append(image)
+        if text is not None:
+            input_list.append(text)
+
+        output_list = self.interleave_inference(input_list, **kargs)
+
+        for i in output_list:
+            if isinstance(i, Image.Image):
+                output_dict['image'] = i
+            elif isinstance(i, str):
+                output_dict['text'] = i
+        return output_dict
+
+===== nvidia-smi =====
+Mon Jun  1 15:22:57 2026       
++-----------------------------------------------------------------------------------------+
+| NVIDIA-SMI 595.58.03              Driver Version: 595.58.03      CUDA Version: 13.2     |
++-----------------------------------------+------------------------+----------------------+
+| GPU  Name                 Persistence-M | Bus-Id          Disp.A | Volatile Uncorr. ECC |
+| Fan  Temp   Perf          Pwr:Usage/Cap |           Memory-Usage | GPU-Util  Compute M. |
+|                                         |                        |               MIG M. |
+|=========================================+========================+======================|
+|   0  NVIDIA GeForce RTX 4090        On  |   00000000:16:00.0 Off |                  Off |
+| 30%   29C    P8             21W /  450W |       1MiB /  24564MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+|   1  NVIDIA GeForce RTX 4090        On  |   00000000:5A:00.0 Off |                  Off |
+| 30%   29C    P8             28W /  450W |     672MiB /  24564MiB |      0%      Default |
+|                                         |                        |                  N/A |
++-----------------------------------------+------------------------+----------------------+
+
++-----------------------------------------------------------------------------------------+
+| Processes:                                                                              |
+|  GPU   GI   CI              PID   Type   Process name                        GPU Memory |
+|        ID   ID                                                               Usage      |
+|=========================================================================================|
+|  No running processes found                                                             |
++-----------------------------------------------------------------------------------------+

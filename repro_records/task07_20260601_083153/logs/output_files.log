@@ -1,0 +1,15 @@
+repro_records/task07_20260601_083153/commands.sh
+repro_records/task07_20260601_083153/logs/conda_env_list.log
+repro_records/task07_20260601_083153/logs/default_python.log
+repro_records/task07_20260601_083153/logs/gpu_after.log
+repro_records/task07_20260601_083153/logs/gpu_before.log
+repro_records/task07_20260601_083153/logs/gpu_during.log
+repro_records/task07_20260601_083153/logs/image_candidates.log
+repro_records/task07_20260601_083153/logs/input_image_file.log
+repro_records/task07_20260601_083153/logs/minimal_cli_help.log
+repro_records/task07_20260601_083153/logs/minimal_cli_help_bagel.log
+repro_records/task07_20260601_083153/logs/output_files.log
+repro_records/task07_20260601_083153/logs/output_text_preview.log
+repro_records/task07_20260601_083153/logs/plan_read.log
+repro_records/task07_20260601_083153/logs/understanding_baseline.log
+repro_records/task07_20260601_083153/outputs/understanding_baseline.txt

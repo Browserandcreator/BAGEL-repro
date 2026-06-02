@@ -1,0 +1,126 @@
+===== wc -l app.py =====
+613 app.py
+
+===== app.py key lines =====
+7:from accelerate import infer_auto_device_map, load_checkpoint_and_dispatch, init_empty_weights
+11:from data.transforms import ImageTransform
+12:from inferencer import InterleaveInferencer
+22:from accelerate.utils import BnbQuantizationConfig, load_and_quantize_model
+68:tokenizer = Qwen2Tokenizer.from_pretrained(model_path)
+69:tokenizer, new_token_ids, _ = add_special_tokens(tokenizer)
+71:vae_transform = ImageTransform(1024, 512, 16)
+72:vit_transform = ImageTransform(980, 224, 14)
+105:    model = load_checkpoint_and_dispatch(
+116:    model = load_and_quantize_model(
+125:    model = load_and_quantize_model(
+136:inferencer = InterleaveInferencer(
+139:    tokenizer=tokenizer,
+146:def set_seed(seed):
+160:# Text to Image function with thinking option and hyperparameters
+161:def text_to_image(prompt, show_thinking=False, cfg_text_scale=4.0, cfg_interval=0.4, 
+162:                 timestep_shift=3.0, num_timesteps=50, 
+164:                 max_think_token_n=1024, do_sample=False, text_temperature=0.3,
+182:        max_think_token_n=max_think_token_n if show_thinking else 1024,
+183:        do_sample=do_sample if show_thinking else False,
+184:        text_temperature=text_temperature if show_thinking else 0.3,
+185:        cfg_text_scale=cfg_text_scale,
+188:        num_timesteps=num_timesteps,
+194:    # Call inferencer with or without think parameter based on user choice
+195:    result = inferencer(text=prompt, think=show_thinking, **inference_hyper)
+199:# Image Understanding function with thinking option and hyperparameters
+200:def image_understanding(image: Image.Image, prompt: str, show_thinking=False, 
+214:        max_think_token_n=max_new_tokens, # Set max_length
+217:    # Use show_thinking parameter to control thinking process
+218:    result = inferencer(image=image, text=prompt, think=show_thinking, 
+223:# Image Editing function with thinking option and hyperparameters
+224:def edit_image(image: Image.Image, prompt: str, show_thinking=False, cfg_text_scale=4.0, 
+225:              cfg_img_scale=2.0, cfg_interval=0.0, 
+226:              timestep_shift=3.0, num_timesteps=50, cfg_renorm_min=0.0, 
+227:              cfg_renorm_type="text_channel", max_think_token_n=1024, 
+242:        max_think_token_n=max_think_token_n if show_thinking else 1024,
+243:        do_sample=do_sample if show_thinking else False,
+244:        text_temperature=text_temperature if show_thinking else 0.3,
+245:        cfg_text_scale=cfg_text_scale,
+246:        cfg_img_scale=cfg_img_scale,
+249:        num_timesteps=num_timesteps,
+254:    # Include thinking parameter based on user choice
+255:    result = inferencer(image=image, text=prompt, think=show_thinking, **inference_hyper)
+260:def load_example_image(image_path):
+283:            show_thinking = gr.Checkbox(label="Thinking", value=False)
+296:                    cfg_text_scale = gr.Slider(minimum=1.0, maximum=8.0, value=4.0, step=0.1, interactive=True,
+309:                    num_timesteps = gr.Slider(minimum=10, maximum=100, value=50, step=5, interactive=True,
+315:                thinking_params = gr.Group(visible=False)
+316:                with thinking_params:
+319:                        max_think_token_n = gr.Slider(minimum=64, maximum=4006, value=1024, step=64, interactive=True,
+320:                                                    label="Max Think Tokens", info="Maximum number of tokens for thinking")
+324:        thinking_output = gr.Textbox(label="Thinking Process", visible=False)
+328:        # Dynamically show/hide thinking process box and parameters
+329:        def update_thinking_visibility(show):
+332:        show_thinking.change(
+333:            fn=update_thinking_visibility,
+334:            inputs=[show_thinking],
+335:            outputs=[thinking_output, thinking_params]
+338:        # Process function based on thinking option and hyperparameters
+339:        def process_text_to_image(prompt, show_thinking, cfg_text_scale, 
+341:                                 num_timesteps, cfg_renorm_min, cfg_renorm_type, 
+342:                                 max_think_token_n, do_sample, text_temperature, seed, image_ratio):
+343:            image, thinking = text_to_image(
+344:                prompt, show_thinking, cfg_text_scale, cfg_interval,
+345:                timestep_shift, num_timesteps, 
+347:                max_think_token_n, do_sample, text_temperature, seed, image_ratio
+349:            return image, thinking if thinking else ""
+355:                txt_input, show_thinking, cfg_text_scale, 
+357:                num_timesteps, cfg_renorm_min, cfg_renorm_type,
+358:                max_think_token_n, do_sample, text_temperature, seed, image_ratio
+360:            outputs=[img_output, thinking_output]
+374:                edit_thinking_output = gr.Textbox(label="Thinking Process", visible=False)
+377:            edit_show_thinking = gr.Checkbox(label="Thinking", value=False)
+385:                    edit_cfg_text_scale = gr.Slider(minimum=1.0, maximum=8.0, value=4.0, step=0.1, interactive=True,
+389:                    edit_cfg_img_scale = gr.Slider(minimum=1.0, maximum=4.0, value=2.0, step=0.1, interactive=True,
+402:                    edit_num_timesteps = gr.Slider(minimum=10, maximum=100, value=50, step=5, interactive=True,
+409:                edit_thinking_params = gr.Group(visible=False)
+410:                with edit_thinking_params:
+413:                        edit_max_think_token_n = gr.Slider(minimum=64, maximum=4006, value=1024, step=64, interactive=True,
+414:                                                         label="Max Think Tokens", info="Maximum number of tokens for thinking")
+420:        # Dynamically show/hide thinking process box for editing
+421:        def update_edit_thinking_visibility(show):
+424:        edit_show_thinking.change(
+425:            fn=update_edit_thinking_visibility,
+426:            inputs=[edit_show_thinking],
+427:            outputs=[edit_thinking_output, edit_thinking_params]
+430:        # Process editing with thinking option and hyperparameters
+431:        def process_edit_image(image, prompt, show_thinking, cfg_text_scale, 
+432:                              cfg_img_scale, cfg_interval, 
+433:                              timestep_shift, num_timesteps, cfg_renorm_min, 
+434:                              cfg_renorm_type, max_think_token_n, do_sample, 
+436:            edited_image, thinking = edit_image(
+437:                image, prompt, show_thinking, cfg_text_scale, cfg_img_scale, 
+439:                num_timesteps, cfg_renorm_min, cfg_renorm_type,
+440:                max_think_token_n, do_sample, text_temperature, seed
+443:            return edited_image, thinking if thinking else ""
+449:                edit_image_input, edit_prompt, edit_show_thinking, 
+450:                edit_cfg_text_scale, edit_cfg_img_scale, edit_cfg_interval,
+451:                edit_timestep_shift, edit_num_timesteps, 
+453:                edit_max_think_token_n, edit_do_sample, edit_text_temperature, edit_seed
+455:            outputs=[edit_image_output, edit_thinking_output]
+471:            understand_show_thinking = gr.Checkbox(label="Thinking", value=False)
+480:                                                   label="Max New Tokens", info="Maximum length of generated text, including potential thinking")
+484:        # Process understanding with thinking option and hyperparameters
+485:        def process_understanding(image, prompt, show_thinking, do_sample, 
+488:                image, prompt, show_thinking, do_sample, 
+497:                img_input, understand_prompt, understand_show_thinking,
+568:    "Maximum number of tokens for thinking":"思考的最大token数",
+584:    "Maximum length of generated text, including potential thinking":"生成文本的最大长度，包括可能的思考",
+587:def apply_localization(block):
+588:    def process_component(component):
+
+===== inferencer key lines =====
+22:class InterleaveInferencer:
+99:    def gen_image(
+188:    def gen_text(self, gen_context, max_length: int = 500, do_sample: bool = True, temperature: float = 1.0):
+208:    def interleave_inference(
+212:        understanding_output=False,
+235:                if understanding_output:
+250:                    gen_context = self.update_context_image(input_term, gen_context, vae=not understanding_output)
+258:            if understanding_output:
+288:    def __call__(

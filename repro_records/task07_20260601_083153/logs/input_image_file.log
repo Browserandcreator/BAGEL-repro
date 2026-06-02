@@ -1,0 +1,4 @@
+test_images/meme.jpg:     JPEG image data, JFIF standard 1.01, aspect ratio, density 1x1, segment length 16, baseline, precision 8, 500x663, components 3
+test_images/octupusy.jpg: JPEG image data, JFIF standard 1.01, aspect ratio, density 1x1, segment length 16, baseline, precision 8, 478x640, components 3
+test_images/women.jpg:    JPEG image data, JFIF standard 1.01, aspect ratio, density 1x1, segment length 16, baseline, precision 8, 800x1024, components 3
+assets/teaser.webp:       RIFF (little-endian) data, Web/P image, VP8 encoding, 3000x3429, Scaling: [none]x[none], YUV color, decoders should clamp

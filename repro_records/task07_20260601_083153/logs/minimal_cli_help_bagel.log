@@ -1,0 +1,41 @@
+usage: run_bagel_minimal.py [-h] [--model_path MODEL_PATH] [--mode {1,2,3}]
+                            --task
+                            {text-to-image,t2i,understand,understanding,edit}
+                            [--image IMAGE] --prompt PROMPT --output OUTPUT
+                            [--seed SEED] [--think [THINK]]
+                            [--num_timesteps NUM_TIMESTEPS]
+                            [--cfg_text_scale CFG_TEXT_SCALE]
+                            [--cfg_img_scale CFG_IMG_SCALE]
+                            [--cfg_interval CFG_INTERVAL]
+                            [--timestep_shift TIMESTEP_SHIFT]
+                            [--cfg_renorm_min CFG_RENORM_MIN]
+                            [--cfg_renorm_type {global,local,text_channel}]
+                            [--image_shape IMAGE_SHAPE]
+                            [--max_think_token_n MAX_THINK_TOKEN_N]
+                            [--do_sample [DO_SAMPLE]]
+                            [--text_temperature TEXT_TEMPERATURE]
+
+Run BAGEL inference without Gradio.
+
+options:
+  -h, --help            show this help message and exit
+  --model_path MODEL_PATH
+  --mode {1,2,3}
+  --task {text-to-image,t2i,understand,understanding,edit}
+  --image IMAGE
+  --prompt PROMPT
+  --output OUTPUT
+  --seed SEED
+  --think [THINK]
+  --num_timesteps NUM_TIMESTEPS
+  --cfg_text_scale CFG_TEXT_SCALE
+  --cfg_img_scale CFG_IMG_SCALE
+  --cfg_interval CFG_INTERVAL
+  --timestep_shift TIMESTEP_SHIFT
+  --cfg_renorm_min CFG_RENORM_MIN
+  --cfg_renorm_type {global,local,text_channel}
+  --image_shape IMAGE_SHAPE
+  --max_think_token_n MAX_THINK_TOKEN_N
+  --do_sample [DO_SAMPLE]
+  --text_temperature TEXT_TEMPERATURE
+

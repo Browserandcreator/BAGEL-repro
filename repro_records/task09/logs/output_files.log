@@ -1,0 +1,12 @@
+repro_records/task09/commands.sh
+repro_records/task09/logs/gpu_after.log
+repro_records/task09/logs/gpu_before.log
+repro_records/task09/logs/minimal_cli_help.log
+repro_records/task09/logs/output_file.log
+repro_records/task09/logs/plan_read.log
+repro_records/task09/logs/think_false.log
+repro_records/task09/logs/think_true.log
+repro_records/task09/outputs/think_false.png
+repro_records/task09/outputs/think_true.png
+repro_records/task09/outputs/think_true.png.txt
+repro_records/task09/outputs/think_true_text.txt
